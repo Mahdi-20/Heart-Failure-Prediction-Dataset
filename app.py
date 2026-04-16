@@ -233,8 +233,10 @@ with tab1:
         # Define numeric columns (same as training)
         numeric_cols = ['Age', 'RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak']
 
-        # Scale only numeric features
-        input_data[numeric_cols] = scaler.transform(input_data[numeric_cols])
+        # Scale only numeric features using numpy array to avoid feature name conflicts
+        numeric_values = input_data[numeric_cols].values
+        numeric_scaled = scaler.transform(numeric_values)
+        input_data[numeric_cols] = numeric_scaled
         input_scaled = input_data
 
         # Make prediction
