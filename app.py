@@ -582,7 +582,7 @@ with tab3:
         title="Heart Failure Distribution",
         xaxis_title="Status",
         yaxis_title="Number of Patients",
-        height=400,
+        height=280,
         showlegend=False
     )
     st.plotly_chart(fig_disease, use_container_width=True)
