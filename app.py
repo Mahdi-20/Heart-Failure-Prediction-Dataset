@@ -1,0 +1,663 @@
+"""
+Heart Failure Prediction Web App - PRODUCTION VERSION
+Interactive Streamlit application with patient history tracking, model explainability (SHAP), and deployment
+"""
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+import joblib
+import shap
+from datetime import datetime
+import json
+import os
+import warnings
+warnings.filterwarnings('ignore')
+
+# ============================================================================
+# PAGE CONFIGURATION
+# ============================================================================
+
+st.set_page_config(
+    page_title="Heart Failure Predictor",
+    page_icon="❤️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ============================================================================
+# CUSTOM CSS
+# ============================================================================
+
+st.markdown("""
+    <style>
+    .main-header {
+        font-size: 3em;
+        color: #065A82;
+        text-align: center;
+        margin-bottom: 0.5em;
+    }
+    .metric-box {
+        background-color: #EBF4FA;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 5px solid #028090;
+        text-align: center;
+    }
+    .risk-high {
+        color: #C0392B;
+        font-weight: bold;
+    }
+    .risk-low {
+        color: #1E7E34;
+        font-weight: bold;
+    }
+    [role="tablist"] {
+        background: linear-gradient(135deg, #028090 0%, #00A896 100%);
+        padding: 10px;
+        border-radius: 10px;
+        gap: 10px;
+    }
+    [role="tab"] {
+        font-size: 1000px !important;
+        font-weight: 1000 !important;
+        padding: 12px 24px !important;
+        background-color: rgba(255, 255, 0, 0.2) !important;
+        color: white !important;
+        border-radius: 8px !important;
+        border: 2px solid transparent !important;
+        transition: all 0.3s ease;
+    }
+    [role="tab"]:hover {
+        background-color: rgba(255, 255, 255, 0.3) !important;
+        transform: translateY(-2px);
+    }
+    [role="tab"][aria-selected="true"] {
+        background-color: white !important;
+        color: #028090 !important;
+        border: 2px solid #028090 !important;
+        font-weight: 800 !important;
+    }
+    button[kind="secondary"] {
+        background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%) !important;
+        color: white !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        padding: 12px 24px !important;
+        border: 2px solid #27AE60 !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+    button[kind="secondary"]:hover {
+        background: linear-gradient(135deg, #1E8449 0%, #27AE60 100%) !important;
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4) !important;
+    }
+    .sidebar-section {
+        background-color: #E8F4F8;
+        padding: 15px;
+        border-radius: 10px;
+        margin: 10px 0px;
+        border-left: 5px solid #028090;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# ============================================================================
+# LOAD MODEL AND PREPROCESSING OBJECTS
+# ============================================================================
+
+@st.cache_resource
+def load_model():
+    model = joblib.load('best_model.pkl')
+    scaler = joblib.load('scaler.pkl')
+    label_encoders = joblib.load('label_encoders.pkl')
+    feature_names = joblib.load('feature_names.pkl')
+    return model, scaler, label_encoders, feature_names
+
+model, scaler, label_encoders, feature_names = load_model()
+
+# ============================================================================
+# LOAD OR CREATE PATIENT HISTORY
+# ============================================================================
+
+def load_patient_history():
+    if os.path.exists('patient_history.json'):
+        with open('patient_history.json', 'r') as f:
+            return json.load(f)
+    return []
+
+def save_patient_history(history):
+    with open('patient_history.json', 'w') as f:
+        json.dump(history, f, indent=2)
+
+patient_history = load_patient_history()
+
+# ============================================================================
+# HEADER
+# ============================================================================
+
+st.markdown("<h1 class='main-header'>❤️ Heart Failure Prediction System</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 1.1em; color: #666;'>Advanced ML Model for Heart Disease Risk Assessment</p>", unsafe_allow_html=True)
+st.markdown("---")
+
+# ============================================================================
+# TABS
+# ============================================================================
+
+tab1, tab2, tab3 = st.tabs(["🔮 Make Prediction", "📊 Patient History & Trends", "ℹ️ About Project"])
+
+# ============================================================================
+# TAB 1: MAKE PREDICTION
+# ============================================================================
+
+with tab1:
+    st.markdown("## 🔮 Heart Failure Risk Prediction")
+
+    # Create columns for input layout
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("### Demographics")
+        patient_id = st.text_input("Patient ID", value="P001", key="patient_id")
+        patient_name = st.text_input("Patient Name", value="", key="patient_name")
+        age = st.slider("Age (years)", min_value=25, max_value=85, value=50, step=1)
+        sex = st.radio("Sex", options=["Male", "Female"], horizontal=True)
+        sex_encoded = 1 if sex == "Male" else 0
+
+    with col2:
+        st.markdown("### Chest Symptoms")
+        chest_pain_type = st.selectbox(
+            "Chest Pain Type",
+            options=["Asymptomatic (ASY)", "Atypical Angina (ATA)", "Non-anginal Pain (NAP)", "Typical Angina (TA)"],
+            help="Type of chest pain experienced"
+        )
+        cp_map = {"Asymptomatic (ASY)": 0, "Atypical Angina (ATA)": 1, "Non-anginal Pain (NAP)": 2, "Typical Angina (TA)": 3}
+        cp_encoded = cp_map[chest_pain_type]
+
+        exercise_angina = st.radio("Exercise Induced Angina", options=["No", "Yes"], horizontal=True)
+        exercise_angina_encoded = 1 if exercise_angina == "Yes" else 0
+
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.markdown("### Blood Measurements")
+        resting_bp = st.slider("Resting Blood Pressure (mmHg)", min_value=80, max_value=200, value=120, step=1)
+        cholesterol = st.slider("Serum Cholesterol (mg/dL)", min_value=100, max_value=600, value=200, step=1)
+        fasting_bs = st.radio("Fasting Blood Sugar > 120 mg/dL", options=["No", "Yes"], horizontal=True)
+        fasting_bs_encoded = 1 if fasting_bs == "Yes" else 0
+
+    with col4:
+        st.markdown("### Exercise & ECG")
+        max_hr = st.slider("Max Heart Rate Achieved", min_value=60, max_value=220, value=150, step=1)
+        oldpeak = st.slider("ST Depression (Oldpeak)", min_value=-5.0, max_value=7.0, value=0.0, step=0.1)
+        resting_ecg = st.selectbox(
+            "Resting ECG",
+            options=["Normal", "ST-T Abnormality", "LV Hypertrophy"],
+            help="Resting electrocardiogram results"
+        )
+        ecg_map = {"Normal": 1, "ST-T Abnormality": 2, "LV Hypertrophy": 0}
+        ecg_encoded = ecg_map[resting_ecg]
+
+        st_slope = st.selectbox(
+            "ST Slope",
+            options=["Up", "Flat", "Down"],
+            help="Slope of ST segment"
+        )
+        st_slope_map = {"Up": 2, "Flat": 1, "Down": 0}
+        st_slope_encoded = st_slope_map[st_slope]
+
+    st.markdown("---")
+
+    # ========================================================================
+    # MAKE PREDICTION
+    # ========================================================================
+
+    if st.button("Get Heart Failure Risk Assessment", type="secondary", use_container_width=True):
+        # Prepare input data
+        input_data = pd.DataFrame({
+            'Age': [age],
+            'Sex': [sex_encoded],
+            'ChestPainType': [cp_encoded],
+            'RestingBP': [resting_bp],
+            'Cholesterol': [cholesterol],
+            'FastingBS': [fasting_bs_encoded],
+            'RestingECG': [ecg_encoded],
+            'MaxHR': [max_hr],
+            'ExerciseAngina': [exercise_angina_encoded],
+            'Oldpeak': [oldpeak],
+            'ST_Slope': [st_slope_encoded]
+        })
+
+        # Scale input
+        input_scaled = scaler.transform(input_data)
+
+        # Make prediction
+        prediction = model.predict(input_scaled)[0]
+        prediction_proba = model.predict_proba(input_scaled)[0]
+        risk_percentage = prediction_proba[1] * 100
+        confidence = prediction_proba[prediction]
+
+        # Display results
+        st.markdown("### Prediction Results")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if prediction == 1:
+                st.error(f"**Risk Level: HIGH**")
+                st.markdown(f"<p class='risk-high'>Heart Failure Risk Detected</p>", unsafe_allow_html=True)
+            else:
+                st.success(f"**Risk Level: LOW**")
+                st.markdown(f"<p class='risk-low'>No Heart Failure Detected</p>", unsafe_allow_html=True)
+
+        with col2:
+            st.metric("Risk Percentage", f"{risk_percentage:.1f}%")
+
+        with col3:
+            st.metric("Model Confidence", f"{confidence:.1%}")
+
+        # Risk gauge chart
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number+delta",
+            value=risk_percentage,
+            domain={'x': [0, 1], 'y': [0, 1]},
+            title={'text': "Heart Failure Risk (%)"},
+            delta={'reference': 50},
+            gauge={
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "#C0392B" if risk_percentage > 50 else "#1E7E34"},
+                'steps': [
+                    {'range': [0, 25], 'color': "#E8F5E9"},
+                    {'range': [25, 50], 'color': "#C8E6C9"},
+                    {'range': [50, 75], 'color': "#FFE0B2"},
+                    {'range': [75, 100], 'color': "#FFCDD2"}
+                ],
+                'threshold': {
+                    'line': {'color': "red", 'width': 4},
+                    'thickness': 0.75,
+                    'value': 70
+                }
+            }
+        ))
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
+
+        # SHAP Explainability
+        st.markdown("### Feature Importance (SHAP Analysis)")
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(input_scaled)
+
+        if isinstance(shap_values, list):
+            shap_values_pred = shap_values[1]  # For disease class
+        else:
+            shap_values_pred = shap_values
+
+        # Create simple feature importance visualization
+        importance_df = pd.DataFrame({
+            'Feature': feature_names,
+            'Impact': np.abs(shap_values_pred[0])
+        }).sort_values('Impact', ascending=False)
+
+        fig_shap = go.Figure(go.Bar(
+            y=importance_df['Feature'],
+            x=importance_df['Impact'],
+            orientation='h',
+            marker=dict(color='#028090')
+        ))
+        fig_shap.update_layout(
+            title="Feature Importance for This Prediction",
+            xaxis_title="Impact Magnitude",
+            yaxis_title="Feature",
+            height=400
+        )
+        st.plotly_chart(fig_shap, use_container_width=True)
+
+        # Current Prediction Input Summary
+        st.markdown("### Current Prediction Input Summary")
+        summary_data = {
+            'Age': [age],
+            'Sex': [sex],
+            'Chest Pain Type': [chest_pain_type],
+            'Resting BP (mmHg)': [resting_bp],
+            'Cholesterol (mg/dL)': [cholesterol],
+            'Fasting BS > 120': [fasting_bs],
+            'Resting ECG': [resting_ecg],
+            'Max HR': [max_hr],
+            'Exercise Angina': [exercise_angina],
+            'ST Depression': [oldpeak],
+            'ST Slope': [st_slope]
+        }
+        st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
+
+        # Save to History button
+        if st.button("Save This Prediction to History", type="secondary", use_container_width=True):
+            history_entry = {
+                'timestamp': datetime.now().isoformat(),
+                'patient_id': patient_id,
+                'patient_name': patient_name,
+                'age': age,
+                'sex': sex,
+                'chest_pain_type': chest_pain_type,
+                'resting_bp': resting_bp,
+                'cholesterol': cholesterol,
+                'fasting_bs': fasting_bs,
+                'resting_ecg': resting_ecg,
+                'max_hr': max_hr,
+                'exercise_angina': exercise_angina,
+                'oldpeak': oldpeak,
+                'st_slope': st_slope,
+                'prediction': int(prediction),
+                'risk_percentage': float(risk_percentage),
+                'confidence': float(confidence)
+            }
+            patient_history.append(history_entry)
+            save_patient_history(patient_history)
+            st.success("✓ Prediction saved to patient history!")
+
+        st.markdown("---")
+
+        # Important disclaimers
+        st.markdown("### ⚠️ Important Disclaimers")
+        st.warning("""
+        This application is for **educational purposes only** and should NOT be used for clinical diagnosis.
+        Always consult with qualified healthcare professionals for medical advice and diagnosis.
+        The model predictions are estimates based on training data and should not replace professional medical evaluation.
+        """)
+
+# ============================================================================
+# TAB 2: PATIENT HISTORY & TRENDS
+# ============================================================================
+
+with tab2:
+    st.markdown("## 📊 Patient History & Risk Trend Analysis")
+
+    if len(patient_history) > 0:
+        # Patient selection
+        patient_list = list(set([f"{h['patient_id']} - {h['patient_name']}" for h in patient_history]))
+        patient_list.sort()
+        patient_selection_label = st.selectbox("Select Patient", options=patient_list, key="patient_select")
+
+        # Filter history for selected patient
+        selected_patient_id = patient_selection_label.split(' - ')[0]
+        patient_data = [h for h in patient_history if h['patient_id'] == selected_patient_id]
+
+        # Convert to DataFrame
+        patient_df = pd.DataFrame(patient_data)
+        patient_df['timestamp'] = pd.to_datetime(patient_df['timestamp'])
+        patient_df = patient_df.sort_values('timestamp')
+
+        # Display prediction history table
+        st.markdown("### Prediction History Table")
+        display_cols = ['timestamp', 'patient_id', 'patient_name', 'age', 'cholesterol', 'resting_bp', 'max_hr', 'prediction', 'risk_percentage', 'confidence']
+        available_cols = [col for col in display_cols if col in patient_df.columns]
+        st.dataframe(patient_df[available_cols], use_container_width=True)
+
+        # Trend Analysis
+        if len(patient_data) >= 2:
+            st.markdown("### Risk Trend Analysis")
+
+            fig_trend = go.Figure()
+            fig_trend.add_trace(go.Scatter(
+                x=patient_df['timestamp'],
+                y=patient_df['risk_percentage'],
+                mode='lines+markers',
+                name='Risk %',
+                line=dict(color='#C0392B', width=3),
+                marker=dict(size=10)
+            ))
+
+            fig_trend.update_layout(
+                title="Heart Failure Risk Over Time",
+                xaxis_title="Date/Time",
+                yaxis_title="Risk Percentage (%)",
+                hovermode='x unified',
+                height=400,
+                template='plotly_white'
+            )
+            st.plotly_chart(fig_trend, use_container_width=True)
+
+            # Statistics
+            st.markdown("### Patient Statistics")
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.metric("Average Risk", f"{patient_df['risk_percentage'].mean():.1f}%")
+
+            with col2:
+                st.metric("Max Risk", f"{patient_df['risk_percentage'].max():.1f}%")
+
+            with col3:
+                st.metric("Min Risk", f"{patient_df['risk_percentage'].min():.1f}%")
+
+        else:
+            st.info("Patient has only one prediction. Need at least 2 predictions for trend analysis.")
+            st.markdown("**Tip:** Add more predictions for this patient to see trends over time.")
+
+        # Patient Information
+        st.markdown("### Patient Information")
+        latest_entry = patient_data[-1]
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            st.metric("Age", latest_entry.get('age', 'N/A'))
+
+        with col2:
+            st.metric("Sex", latest_entry.get('sex', 'N/A'))
+
+        with col3:
+            st.metric("Resting BP", f"{latest_entry.get('resting_bp', 'N/A')} mmHg")
+
+        with col4:
+            st.metric("Cholesterol", f"{latest_entry.get('cholesterol', 'N/A')} mg/dL")
+
+    else:
+        st.info("No patient history yet. Make some predictions in the 'Make Prediction' tab to see them here!")
+
+# ============================================================================
+# TAB 3: ABOUT PROJECT
+# ============================================================================
+
+with tab3:
+    st.markdown("<h2 style='text-align: center; color: #065A82;'>📚 About This Project</h2>", unsafe_allow_html=True)
+    st.markdown("---")
+
+    st.markdown("## 📋 Project Overview")
+    st.markdown("""
+    **Objective:** Predict heart failure risk using supervised machine learning classification with clinical features.
+
+    **Machine Learning Problem:**
+    - **Type:** Binary Classification (Heart Failure Present/Absent)
+    - **Dataset:** Heart Failure Prediction Dataset (918 patients, 11 clinical features)
+    - **Features:** Age, Sex, Chest Pain Type, Resting BP, Cholesterol, Fasting BS, Resting ECG, Max HR, Exercise Angina, ST Depression, ST Slope
+
+    **Machine Learning Approaches Evaluated:**
+    - **SVM (Linear & RBF)** - Support Vector Machine classifiers
+    - **Random Forest** - Ensemble decision tree method
+    - **Logistic Regression** - Baseline statistical model
+    - **Linear Discriminant Analysis (LDA)** - Dimensionality reduction classifier
+
+    **Model Evaluation & Selection:**
+    - **Methodology:** Stratified 5-fold Cross-Validation
+    - **Metrics:** Accuracy, ROC-AUC, Recall, Precision, F1-Score
+    - **Key Finding:** Random Forest achieved 92.39% ROC-AUC with 86.41% test accuracy
+    - **Data Quality:** 100% complete, no missing values, no duplicates, well-balanced classes
+
+    **Model Deployment & Productionization:**
+    - **Framework:** Streamlit for interactive web application
+    - **Deployment Platform:** Streamlit Cloud for live, shareable predictions
+    - **Real-time Inference:** Instant risk predictions with clinical feature inputs
+    - **Model Interpretability:** SHAP explainability layer shows which features influence predictions
+    - **Data Persistence:** Patient history tracking with trend analysis capabilities
+
+    **Deep Learning Consideration:**
+    - Foundation laid for future neural network implementations
+    - Current ML models provide strong baseline for comparison with deep learning approaches
+
+    **Key Insights:**
+    - Random Forest shows excellent generalization with clean data
+    - Clinical features provide strong discriminative power for disease prediction
+    - Model explainability (SHAP) reveals which features most influence predictions
+    - Successful transition from research model to production-ready web application
+    """)
+
+    st.markdown("---")
+
+    st.markdown("## 🎓 Course Information")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.info("""
+        ### Course
+        **Advanced ML & Data Analytics**
+        """)
+
+    with col2:
+        st.info("""
+        ### Institution
+        **Nexa-land**
+        """)
+
+    with col3:
+        st.info("""
+        ### Professor
+        **[Prof. Hamed Mamani](https://foster.uw.edu/faculty-research/directory/hamed-mamani/)**
+
+        University of Washington
+        """)
+
+    st.markdown("---")
+
+    st.markdown("## 👨‍💻 Author")
+    st.markdown("""
+    **Mahdi Bakhtiari** (@mahdi-20)
+
+    GitHub: [github.com/mahdi-20](https://github.com/mahdi-20)
+    """)
+
+    st.markdown("---")
+
+    st.markdown("## 🛠️ Technologies & Libraries")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown("""
+        ### Python ML Stack
+        - **NumPy** - Numerical computing & arrays
+        - **Pandas** - Data manipulation & analysis
+        - **Scikit-Learn** - ML algorithms & preprocessing
+        - **Matplotlib/Seaborn** - Data visualization
+        - **Plotly** - Interactive visualizations
+
+        ### ML Model Development
+        - **SVM** - Support Vector Machine
+        - **Random Forest** - Ensemble classification (Selected)
+        - **Logistic Regression** - Baseline model
+        - **Model Training & Evaluation**
+        - **Cross-Validation** - 5-fold CV
+        """)
+
+    with col2:
+        st.markdown("""
+        ### ML Techniques & Concepts
+        - **Preprocessing** - Feature scaling & normalization
+        - **Feature Engineering** - Clinical feature selection
+        - **Exploratory Data Analysis (EDA)** - Statistical analysis
+        - **Classification Models** - Binary disease prediction
+        - **Regression Concepts** - Model relationships
+        - **Evaluation Metrics** - Accuracy, ROC-AUC, Recall, Precision
+
+        ### Model Interpretability & Deployment
+        - **SHAP** - Feature importance analysis
+        - **Streamlit** - Interactive web framework
+        - **Model Explainability** - Understanding predictions
+        - **Interactive Visualizations** - Real-time insights
+        """)
+
+    st.markdown("---")
+
+    st.markdown("## 📊 Dataset")
+    st.markdown("""
+    - **Source:** [Heart Failure Prediction Dataset](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction)
+    - **Samples:** 918 patients
+    - **Features:** 11 clinical measurements
+    - **Target:** Binary classification (presence/absence of heart failure)
+    - **Data Quality:** 100% complete, no missing values, no duplicates
+    - **Class Balance:** 410 (No Disease) vs 508 (Disease) = 0.81 ratio
+    """)
+
+    st.markdown("---")
+
+    st.markdown("## 📈 Model Performance")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("Algorithm", "Random Forest", "100 trees")
+
+    with col2:
+        st.metric("Test Accuracy", "86.41%", "✓ Excellent")
+
+    with col3:
+        st.metric("ROC-AUC", "0.9239", "✓ High")
+
+    with col4:
+        st.metric("Recall", "87.25%", "Disease Detection")
+
+    st.markdown("---")
+
+    st.markdown("## ✨ Application Features")
+    st.markdown("""
+    ✅ **Interactive Web Application Deployment** - Real-time predictions with Streamlit framework
+
+    ✅ **Data Visualization and Analysis** - Interactive charts, gauges, and trend analysis
+
+    ✅ **Model Explainability (SHAP)** - Understand which features most influence predictions
+
+    ✅ **Patient History Tracking and Trend Analysis** - Save, compare, and analyze multiple predictions over time
+
+    **Additional Features:**
+    - 🔮 Real-time Predictions with clinical feature inputs
+    - 👥 Patient ID Support for distinguishing similar patients
+    - 🎯 Confidence Scores for each prediction
+    - 📱 Responsive Design for desktop and mobile devices
+    """)
+
+    st.markdown("---")
+
+    st.markdown("## 📂 Source Code")
+    st.markdown("""
+    Full project source code available on GitHub:
+
+    [![GitHub](https://img.shields.io/badge/GitHub-View%20Repository-black?logo=github&style=for-the-badge)](https://github.com/mahdi-20/heart-disease-predictor)
+
+    **Repository includes:**
+    - `app.py` - Standard version
+    - `app_with_retraining.py` - Advanced version with model retraining
+    - `heart.csv` - Heart Failure dataset
+    - `ml_pipeline.py` - Complete ML pipeline
+    - `requirements.txt` - Dependencies
+    - Complete documentation
+    """)
+
+    st.markdown("---")
+
+    st.warning("""
+    ### ⚠️ Important Disclaimer
+
+    This application is for **educational purposes only** and should not be used for clinical diagnosis.
+    Always consult with qualified healthcare professionals for medical advice and diagnosis.
+
+    The model is trained on historical data and predictions are estimates only.
+    """)
+
+    st.markdown("---")
+
+    st.markdown("""
+    <div style='text-align: center; color: #666; font-size: 0.9em; margin-top: 30px;'>
+        <p>❤️ Built with Python, Machine Learning, and Streamlit</p>
+        <p>Advanced ML & Data Analytics Course | Nexa-land | Prof. Hamed Mamani, University of Washington</p>
+    </div>
+    """, unsafe_allow_html=True)
