@@ -152,118 +152,151 @@ tab1, tab2, tab3, tab4 = st.tabs(["🔮 Make Prediction", "📊 Patient History 
 # TAB 1: MAKE PREDICTION
 # ============================================================================
 
+# ============================================================================
+# SIDEBAR INPUT SECTION
+# ============================================================================
+
+st.sidebar.markdown("### 👤 Patient Information")
+patient_id = st.sidebar.text_input("Patient ID (e.g., P001)", value="P001", placeholder="Unique ID")
+patient_name = st.sidebar.text_input("Patient Name", value="", placeholder="Patient name")
+
+# Demographics section
+st.sidebar.markdown("""
+<div style='background-color: #E8F4F8; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #028090;'>
+    <h3 style='color: #065A82; margin-top: 0;'>👥 Demographics</h3>
+</div>
+""", unsafe_allow_html=True)
+age = st.sidebar.slider("Age (years)", min_value=25, max_value=85, value=50, step=1)
+sex = st.sidebar.radio("Sex", options=["Male", "Female"], horizontal=True)
+sex_encoded = 1 if sex == "Male" else 0
+
+# Chest Symptoms section
+st.sidebar.markdown("""
+<div style='background-color: #FFF3E0; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #FF9800;'>
+    <h3 style='color: #E65100; margin-top: 0;'>💓 Chest Symptoms</h3>
+</div>
+""", unsafe_allow_html=True)
+chest_pain_type = st.sidebar.selectbox(
+    "Chest Pain Type",
+    options=["Asymptomatic (ASY)", "Atypical Angina (ATA)", "Non-anginal Pain (NAP)", "Typical Angina (TA)"]
+)
+cp_map = {"Asymptomatic (ASY)": 0, "Atypical Angina (ATA)": 1, "Non-anginal Pain (NAP)": 2, "Typical Angina (TA)": 3}
+cp_encoded = cp_map[chest_pain_type]
+
+exercise_angina = st.sidebar.radio("Exercise Induced Angina", options=["No", "Yes"], horizontal=True)
+exercise_angina_encoded = 1 if exercise_angina == "Yes" else 0
+
+# Blood Measurements section
+st.sidebar.markdown("""
+<div style='background-color: #F3E5F5; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #9C27B0;'>
+    <h3 style='color: #6A1B9A; margin-top: 0;'>🩸 Blood Measurements</h3>
+</div>
+""", unsafe_allow_html=True)
+resting_bp = st.sidebar.slider("Resting Blood Pressure (mmHg)", min_value=80, max_value=200, value=120, step=1)
+cholesterol = st.sidebar.slider("Serum Cholesterol (mg/dL)", min_value=100, max_value=600, value=200, step=1)
+fasting_bs = st.sidebar.radio("Fasting Blood Sugar > 120 mg/dL", options=["No", "Yes"], horizontal=True)
+fasting_bs_encoded = 1 if fasting_bs == "Yes" else 0
+
+# Exercise & ECG section
+st.sidebar.markdown("""
+<div style='background-color: #E8F5E9; padding: 12px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #4CAF50;'>
+    <h3 style='color: #1B5E20; margin-top: 0;'>🏃 Exercise & ECG</h3>
+</div>
+""", unsafe_allow_html=True)
+max_hr = st.sidebar.slider("Max Heart Rate Achieved", min_value=60, max_value=220, value=150, step=1)
+oldpeak = st.sidebar.slider("ST Depression (Oldpeak)", min_value=-5.0, max_value=7.0, value=0.0, step=0.1)
+resting_ecg = st.sidebar.selectbox(
+    "Resting ECG",
+    options=["Normal", "ST-T Abnormality", "LV Hypertrophy"]
+)
+ecg_map = {"Normal": 1, "ST-T Abnormality": 2, "LV Hypertrophy": 0}
+ecg_encoded = ecg_map[resting_ecg]
+
+st_slope = st.sidebar.selectbox(
+    "ST Slope",
+    options=["Up", "Flat", "Down"]
+)
+st_slope_map = {"Up": 2, "Flat": 1, "Down": 0}
+st_slope_encoded = st_slope_map[st_slope]
+
+# ============================================================================
+# AUTOMATIC PREDICTION (No button needed)
+# ============================================================================
+
+# Prepare input data
+input_data = pd.DataFrame({
+    'Age': [age],
+    'Sex': [sex_encoded],
+    'ChestPainType': [cp_encoded],
+    'RestingBP': [resting_bp],
+    'Cholesterol': [cholesterol],
+    'FastingBS': [fasting_bs_encoded],
+    'RestingECG': [ecg_encoded],
+    'MaxHR': [max_hr],
+    'ExerciseAngina': [exercise_angina_encoded],
+    'Oldpeak': [oldpeak],
+    'ST_Slope': [st_slope_encoded]
+})
+
+# Define numeric columns (same as training)
+numeric_cols = ['Age', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'Oldpeak']
+
+# Scale numeric features
+numeric_values = input_data[numeric_cols].values
+numeric_scaled = scaler.transform(numeric_values)
+input_data[numeric_cols] = numeric_scaled
+input_scaled = input_data
+
+# Make prediction
+prediction = model.predict(input_scaled)[0]
+prediction_proba = model.predict_proba(input_scaled)[0]
+risk_percentage = prediction_proba[1] * 100
+confidence = prediction_proba[prediction] * 100
+
+# ============================================================================
+# TAB 1: MAKE PREDICTION
+# ============================================================================
+
 with tab1:
     st.markdown("## 🔮 Heart Failure Risk Prediction")
 
-    # Create columns for input layout
-    col1, col2 = st.columns(2)
+    # Display top 3 metrics
+    col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown("### Demographics")
-        patient_id = st.text_input("Patient ID", value="P001", key="patient_id")
-        patient_name = st.text_input("Patient Name", value="", key="patient_name")
-        age = st.slider("Age (years)", min_value=25, max_value=85, value=50, step=1)
-        sex = st.radio("Sex", options=["Male", "Female"], horizontal=True)
-        sex_encoded = 1 if sex == "Male" else 0
+        st.markdown(f"""
+        <div class='metric-box'>
+            <h3 style='color: #065A82; margin: 0;'>Risk Score</h3>
+            <h2 style='color: #C0392B; margin: 0;'>{risk_percentage:.1f}%</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col2:
-        st.markdown("### Chest Symptoms")
-        chest_pain_type = st.selectbox(
-            "Chest Pain Type",
-            options=["Asymptomatic (ASY)", "Atypical Angina (ATA)", "Non-anginal Pain (NAP)", "Typical Angina (TA)"],
-            help="Type of chest pain experienced"
-        )
-        cp_map = {"Asymptomatic (ASY)": 0, "Atypical Angina (ATA)": 1, "Non-anginal Pain (NAP)": 2, "Typical Angina (TA)": 3}
-        cp_encoded = cp_map[chest_pain_type]
-
-        exercise_angina = st.radio("Exercise Induced Angina", options=["No", "Yes"], horizontal=True)
-        exercise_angina_encoded = 1 if exercise_angina == "Yes" else 0
-
-    col3, col4 = st.columns(2)
+        prediction_text = "⚠️ HIGH RISK" if prediction == 1 else "✅ LOW RISK"
+        color = "#C0392B" if prediction == 1 else "#1E7E34"
+        st.markdown(f"""
+        <div class='metric-box'>
+            <h3 style='color: #065A82; margin: 0;'>Prediction</h3>
+            <h2 style='color: {color}; margin: 0;'>{prediction_text}</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
     with col3:
-        st.markdown("### Blood Measurements")
-        resting_bp = st.slider("Resting Blood Pressure (mmHg)", min_value=80, max_value=200, value=120, step=1)
-        cholesterol = st.slider("Serum Cholesterol (mg/dL)", min_value=100, max_value=600, value=200, step=1)
-        fasting_bs = st.radio("Fasting Blood Sugar > 120 mg/dL", options=["No", "Yes"], horizontal=True)
-        fasting_bs_encoded = 1 if fasting_bs == "Yes" else 0
-
-    with col4:
-        st.markdown("### Exercise & ECG")
-        max_hr = st.slider("Max Heart Rate Achieved", min_value=60, max_value=220, value=150, step=1)
-        oldpeak = st.slider("ST Depression (Oldpeak)", min_value=-5.0, max_value=7.0, value=0.0, step=0.1)
-        resting_ecg = st.selectbox(
-            "Resting ECG",
-            options=["Normal", "ST-T Abnormality", "LV Hypertrophy"],
-            help="Resting electrocardiogram results"
-        )
-        ecg_map = {"Normal": 1, "ST-T Abnormality": 2, "LV Hypertrophy": 0}
-        ecg_encoded = ecg_map[resting_ecg]
-
-        st_slope = st.selectbox(
-            "ST Slope",
-            options=["Up", "Flat", "Down"],
-            help="Slope of ST segment"
-        )
-        st_slope_map = {"Up": 2, "Flat": 1, "Down": 0}
-        st_slope_encoded = st_slope_map[st_slope]
+        st.markdown(f"""
+        <div class='metric-box'>
+            <h3 style='color: #065A82; margin: 0;'>Confidence</h3>
+            <h2 style='color: #028090; margin: 0;'>{confidence:.1f}%</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # ========================================================================
-    # MAKE PREDICTION
-    # ========================================================================
+    # Display results section
+    st.markdown("### 📊 Risk Assessment")
 
-    if st.button("Get Heart Failure Risk Assessment", type="secondary", use_container_width=True):
-        # Prepare input data
-        input_data = pd.DataFrame({
-            'Age': [age],
-            'Sex': [sex_encoded],
-            'ChestPainType': [cp_encoded],
-            'RestingBP': [resting_bp],
-            'Cholesterol': [cholesterol],
-            'FastingBS': [fasting_bs_encoded],
-            'RestingECG': [ecg_encoded],
-            'MaxHR': [max_hr],
-            'ExerciseAngina': [exercise_angina_encoded],
-            'Oldpeak': [oldpeak],
-            'ST_Slope': [st_slope_encoded]
-        })
+    col1, col2 = st.columns(2)
 
-        # Define numeric columns (same as training - all numeric features from the dataset)
-        numeric_cols = ['Age', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'Oldpeak']
-
-        # Scale only numeric features using numpy array to avoid feature name conflicts
-        numeric_values = input_data[numeric_cols].values
-        numeric_scaled = scaler.transform(numeric_values)
-        input_data[numeric_cols] = numeric_scaled
-        input_scaled = input_data
-
-        # Make prediction
-        prediction = model.predict(input_scaled)[0]
-        prediction_proba = model.predict_proba(input_scaled)[0]
-        risk_percentage = prediction_proba[1] * 100
-        confidence = prediction_proba[prediction]
-
-        # Display results
-        st.markdown("### Prediction Results")
-
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
-            if prediction == 1:
-                st.error(f"**Risk Level: HIGH**")
-                st.markdown(f"<p class='risk-high'>Heart Failure Risk Detected</p>", unsafe_allow_html=True)
-            else:
-                st.success(f"**Risk Level: LOW**")
-                st.markdown(f"<p class='risk-low'>No Heart Failure Detected</p>", unsafe_allow_html=True)
-
-        with col2:
-            st.metric("Risk Percentage", f"{risk_percentage:.1f}%")
-
-        with col3:
-            st.metric("Model Confidence", f"{confidence:.1%}")
-
+    with col1:
         # Risk gauge chart
         fig = go.Figure(go.Indicator(
             mode="gauge+number+delta",
@@ -290,8 +323,9 @@ with tab1:
         fig.update_layout(height=400)
         st.plotly_chart(fig, use_container_width=True)
 
+    with col2:
         # SHAP Explainability
-        st.markdown("### Feature Importance (SHAP Analysis)")
+        st.markdown("#### Feature Importance (SHAP Analysis)")
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(input_scaled)
 
@@ -317,64 +351,66 @@ with tab1:
             marker=dict(color='#028090')
         ))
         fig_shap.update_layout(
-            title="Feature Importance for This Prediction",
+            title="Feature Importance",
             xaxis_title="Impact Magnitude",
             yaxis_title="Feature",
             height=400
         )
         st.plotly_chart(fig_shap, use_container_width=True)
 
-        # Current Prediction Input Summary
-        st.markdown("### Current Prediction Input Summary")
-        summary_data = {
-            'Age': [age],
-            'Sex': [sex],
-            'Chest Pain Type': [chest_pain_type],
-            'Resting BP (mmHg)': [resting_bp],
-            'Cholesterol (mg/dL)': [cholesterol],
-            'Fasting BS > 120': [fasting_bs],
-            'Resting ECG': [resting_ecg],
-            'Max HR': [max_hr],
-            'Exercise Angina': [exercise_angina],
-            'ST Depression': [oldpeak],
-            'ST Slope': [st_slope]
+    st.markdown("---")
+
+    # Current Prediction Input Summary
+    st.markdown("### Current Prediction Input Summary")
+    summary_data = {
+        'Age': [age],
+        'Sex': [sex],
+        'Chest Pain Type': [chest_pain_type],
+        'Resting BP (mmHg)': [resting_bp],
+        'Cholesterol (mg/dL)': [cholesterol],
+        'Fasting BS > 120': [fasting_bs],
+        'Resting ECG': [resting_ecg],
+        'Max HR': [max_hr],
+        'Exercise Angina': [exercise_angina],
+        'ST Depression': [oldpeak],
+        'ST Slope': [st_slope]
+    }
+    st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
+
+    # Save to History button
+    if st.button("Save This Prediction to History", type="secondary", use_container_width=True):
+        history_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'patient_id': patient_id,
+            'patient_name': patient_name,
+            'age': age,
+            'sex': sex,
+            'chest_pain_type': chest_pain_type,
+            'resting_bp': resting_bp,
+            'cholesterol': cholesterol,
+            'fasting_bs': fasting_bs,
+            'resting_ecg': resting_ecg,
+            'max_hr': max_hr,
+            'exercise_angina': exercise_angina,
+            'oldpeak': oldpeak,
+            'st_slope': st_slope,
+            'prediction': int(prediction),
+            'risk_percentage': float(risk_percentage),
+            'confidence': float(confidence)
         }
-        st.dataframe(pd.DataFrame(summary_data), use_container_width=True)
+        patient_history.append(history_entry)
+        save_patient_history(patient_history)
+        st.success("✓ Prediction saved to patient history!")
 
-        # Save to History button
-        if st.button("Save This Prediction to History", type="secondary", use_container_width=True):
-            history_entry = {
-                'timestamp': datetime.now().isoformat(),
-                'patient_id': patient_id,
-                'patient_name': patient_name,
-                'age': age,
-                'sex': sex,
-                'chest_pain_type': chest_pain_type,
-                'resting_bp': resting_bp,
-                'cholesterol': cholesterol,
-                'fasting_bs': fasting_bs,
-                'resting_ecg': resting_ecg,
-                'max_hr': max_hr,
-                'exercise_angina': exercise_angina,
-                'oldpeak': oldpeak,
-                'st_slope': st_slope,
-                'prediction': int(prediction),
-                'risk_percentage': float(risk_percentage),
-                'confidence': float(confidence)
-            }
-            patient_history.append(history_entry)
-            save_patient_history(patient_history)
-            st.success("✓ Prediction saved to patient history!")
+    st.markdown("---")
 
-        st.markdown("---")
-
-        # Important disclaimers
-        st.markdown("### ⚠️ Important Disclaimers")
-        st.warning("""
-        This application is for **educational purposes only** and should NOT be used for clinical diagnosis.
-        Always consult with qualified healthcare professionals for medical advice and diagnosis.
-        The model predictions are estimates based on training data and should not replace professional medical evaluation.
-        """)
+    # Important disclaimers
+    st.markdown("### ⚠️ Important Disclaimers")
+    st.warning("""
+    This application is for **educational purposes only** and should NOT be used for clinical diagnosis.
+    Always consult with qualified healthcare professionals for medical advice and diagnosis.
+    The model predictions are estimates based on training data and should not replace professional medical evaluation.
+    """)
 
 # ============================================================================
 # TAB 2: PATIENT HISTORY & TRENDS
