@@ -230,8 +230,8 @@ with tab1:
             'ST_Slope': [st_slope_encoded]
         })
 
-        # Define numeric columns (same as training)
-        numeric_cols = ['Age', 'RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak']
+        # Define numeric columns (same as training - all numeric features from the dataset)
+        numeric_cols = ['Age', 'RestingBP', 'Cholesterol', 'FastingBS', 'MaxHR', 'Oldpeak']
 
         # Scale only numeric features using numpy array to avoid feature name conflicts
         numeric_values = input_data[numeric_cols].values
