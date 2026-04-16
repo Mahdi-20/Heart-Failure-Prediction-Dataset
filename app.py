@@ -338,9 +338,12 @@ with tab1:
         # Ensure 1D array
         shap_values_pred = np.asarray(shap_values_pred).flatten()
 
+        # Use input column names - they match the model's expected features
+        feature_list = list(input_data.columns)
+
         # Create simple feature importance visualization
         importance_df = pd.DataFrame({
-            'Feature': feature_names,
+            'Feature': feature_list,
             'Impact': shap_values_pred
         }).sort_values('Impact', ascending=False)
 
