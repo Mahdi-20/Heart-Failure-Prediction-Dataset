@@ -449,7 +449,9 @@ with tab2:
 
         # Convert to DataFrame
         patient_df = pd.DataFrame(patient_data)
-        patient_df['timestamp'] = pd.to_datetime(patient_df['timestamp'])
+        # Handle different timestamp formats flexibly
+        patient_df['timestamp'] = pd.to_datetime(patient_df['timestamp'], format='mixed', errors='coerce')
+        patient_df = patient_df.dropna(subset=['timestamp'])  # Remove rows with invalid timestamps
         patient_df = patient_df.sort_values('timestamp')
 
         # Display prediction history table
