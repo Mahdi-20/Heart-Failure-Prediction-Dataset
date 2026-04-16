@@ -438,10 +438,22 @@ with tab2:
     st.markdown("## 📊 Patient History & Risk Trend Analysis")
 
     if len(patient_history) > 0:
-        # Patient selection
+        # Display all patients' history first
+        all_patient_df = pd.DataFrame(patient_history)
+        all_patient_df['timestamp'] = pd.to_datetime(all_patient_df['timestamp'], format='mixed', errors='coerce')
+        all_patient_df = all_patient_df.dropna(subset=['timestamp'])
+        all_patient_df = all_patient_df.sort_values('timestamp', ascending=False)
+
+        # Display complete history table
+        st.markdown("### Complete Prediction History")
+        display_cols = ['timestamp', 'patient_id', 'patient_name', 'age', 'cholesterol', 'resting_bp', 'max_hr', 'prediction', 'risk_percentage', 'confidence']
+        available_cols = [col for col in display_cols if col in all_patient_df.columns]
+        st.dataframe(all_patient_df[available_cols], use_container_width=True)
+
+        # Patient selection below the table
         patient_list = list(set([f"{h['patient_id']} - {h['patient_name']}" for h in patient_history]))
         patient_list.sort()
-        patient_selection_label = st.selectbox("Select Patient", options=patient_list, key="patient_select")
+        patient_selection_label = st.selectbox("Select Patient for Detailed Analysis", options=patient_list, key="patient_select")
 
         # Filter history for selected patient
         selected_patient_id = patient_selection_label.split(' - ')[0]
@@ -453,12 +465,6 @@ with tab2:
         patient_df['timestamp'] = pd.to_datetime(patient_df['timestamp'], format='mixed', errors='coerce')
         patient_df = patient_df.dropna(subset=['timestamp'])  # Remove rows with invalid timestamps
         patient_df = patient_df.sort_values('timestamp')
-
-        # Display prediction history table
-        st.markdown("### Prediction History Table")
-        display_cols = ['timestamp', 'patient_id', 'patient_name', 'age', 'cholesterol', 'resting_bp', 'max_hr', 'prediction', 'risk_percentage', 'confidence']
-        available_cols = [col for col in display_cols if col in patient_df.columns]
-        st.dataframe(patient_df[available_cols], use_container_width=True)
 
         # Trend Analysis
         if len(patient_data) >= 2:
