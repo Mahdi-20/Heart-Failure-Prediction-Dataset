@@ -326,40 +326,55 @@ with tab1:
     with col2:
         # SHAP Explainability
         st.markdown("#### Feature Importance (SHAP Analysis)")
-        explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(input_scaled)
+        try:
+            explainer = shap.TreeExplainer(model)
+            shap_values = explainer.shap_values(input_scaled)
 
-        # Handle SHAP values for binary classification
-        if isinstance(shap_values, list):
-            shap_values_pred = np.abs(shap_values[1][0])  # For disease class, first sample
-        else:
-            shap_values_pred = np.abs(shap_values[0])  # Handle other cases
+            # Handle SHAP values for binary classification
+            if isinstance(shap_values, list):
+                shap_values_pred = np.abs(shap_values[1][0])  # For disease class, first sample
+            else:
+                # For single output, take first sample
+                if shap_values.ndim > 1:
+                    shap_values_pred = np.abs(shap_values[0])
+                else:
+                    shap_values_pred = np.abs(shap_values)
 
-        # Ensure 1D array
-        shap_values_pred = np.asarray(shap_values_pred).flatten()
+            # Ensure 1D array and fix length if needed
+            shap_values_pred = np.asarray(shap_values_pred).flatten()
+            feature_list = list(input_data.columns)
 
-        # Use input column names - they match the model's expected features
-        feature_list = list(input_data.columns)
+            # Match lengths if there's a mismatch
+            if len(shap_values_pred) != len(feature_list):
+                # Take the minimum length
+                min_len = min(len(shap_values_pred), len(feature_list))
+                shap_values_pred = shap_values_pred[:min_len]
+                feature_list = feature_list[:min_len]
 
-        # Create simple feature importance visualization
-        importance_df = pd.DataFrame({
-            'Feature': feature_list,
-            'Impact': shap_values_pred
-        }).sort_values('Impact', ascending=False)
+            # Create simple feature importance visualization
+            if len(shap_values_pred) > 0 and len(feature_list) > 0:
+                importance_df = pd.DataFrame({
+                    'Feature': feature_list,
+                    'Impact': shap_values_pred
+                }).sort_values('Impact', ascending=False)
 
-        fig_shap = go.Figure(go.Bar(
-            y=importance_df['Feature'],
-            x=importance_df['Impact'],
-            orientation='h',
-            marker=dict(color='#028090')
-        ))
-        fig_shap.update_layout(
-            title="Feature Importance",
-            xaxis_title="Impact Magnitude",
-            yaxis_title="Feature",
-            height=400
-        )
-        st.plotly_chart(fig_shap, use_container_width=True)
+                fig_shap = go.Figure(go.Bar(
+                    y=importance_df['Feature'],
+                    x=importance_df['Impact'],
+                    orientation='h',
+                    marker=dict(color='#028090')
+                ))
+                fig_shap.update_layout(
+                    title="Feature Importance",
+                    xaxis_title="Impact Magnitude",
+                    yaxis_title="Feature",
+                    height=400
+                )
+                st.plotly_chart(fig_shap, use_container_width=True)
+            else:
+                st.info("Feature importance data unavailable")
+        except Exception as e:
+            st.info("SHAP analysis unavailable for this prediction")
 
     st.markdown("---")
 
