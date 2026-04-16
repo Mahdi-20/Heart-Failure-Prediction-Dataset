@@ -868,6 +868,7 @@ with tab4:
     st.markdown("""
     <div style='text-align: center; color: #666; font-size: 0.9em; margin-top: 30px;'>
         <p>❤️ Built with Python, Machine Learning, and Streamlit</p>
-        <p>Advanced ML & Data Analytics Course | Nexa-land | Prof. Hamed Mamani, University of Washington</p>
+        <p><strong>Author:</strong> Mahdi Bakhtiari</p>
+        <p><strong>Course:</strong> Advanced ML & Data Analytics | <strong>Institution:</strong> Nexa-land | <strong>Instructor:</strong> Prof. Hamed Mamani, University of Washington</p>
     </div>
     """, unsafe_allow_html=True)
