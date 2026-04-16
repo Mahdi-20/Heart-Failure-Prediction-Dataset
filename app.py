@@ -146,7 +146,7 @@ st.markdown("---")
 # TABS
 # ============================================================================
 
-tab1, tab2, tab3 = st.tabs(["🔮 Make Prediction", "📊 Patient History & Trends", "ℹ️ About Project"])
+tab1, tab2, tab3, tab4 = st.tabs(["🔮 Make Prediction", "📊 Patient History & Trends", "📈 Data Insights", "ℹ️ About Project"])
 
 # ============================================================================
 # TAB 1: MAKE PREDICTION
@@ -456,10 +456,148 @@ with tab2:
         st.info("No patient history yet. Make some predictions in the 'Make Prediction' tab to see them here!")
 
 # ============================================================================
-# TAB 3: ABOUT PROJECT
+# TAB 3: DATA INSIGHTS & VISUALIZATIONS
 # ============================================================================
 
 with tab3:
+    st.markdown("## 📈 Data Insights & Visualizations")
+
+    # Load original data for insights
+    df_viz = pd.read_csv('heart.csv')
+
+    st.markdown("### Dataset Overview")
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Patients", len(df_viz))
+    with col2:
+        st.metric("Heart Failure Cases", (df_viz['HeartDisease'] == 1).sum())
+    with col3:
+        st.metric("Healthy Cases", (df_viz['HeartDisease'] == 0).sum())
+    with col4:
+        st.metric("Features", len(df_viz.columns) - 1)
+
+    st.markdown("---")
+
+    # Disease Distribution
+    st.markdown("### Disease Distribution")
+    disease_counts = df_viz['HeartDisease'].value_counts()
+    fig_disease = go.Figure(data=[
+        go.Bar(x=['No Heart Failure', 'Heart Failure'],
+               y=[disease_counts[0], disease_counts[1]],
+               marker=dict(color=['#2ecc71', '#e74c3c']))
+    ])
+    fig_disease.update_layout(
+        title="Heart Failure Distribution",
+        xaxis_title="Status",
+        yaxis_title="Number of Patients",
+        height=400,
+        showlegend=False
+    )
+    st.plotly_chart(fig_disease, use_container_width=True)
+
+    st.markdown("---")
+
+    # Age and Sex Distribution
+    st.markdown("### Demographics")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig_age = go.Figure(data=[go.Histogram(x=df_viz['Age'], nbinsx=20, marker=dict(color='steelblue'))])
+        fig_age.update_layout(title="Age Distribution", xaxis_title="Age (years)", yaxis_title="Count", height=400)
+        st.plotly_chart(fig_age, use_container_width=True)
+
+    with col2:
+        sex_counts = df_viz['Sex'].value_counts()
+        fig_sex = go.Figure(data=[
+            go.Pie(labels=['Male', 'Female'], values=[sex_counts['M'], sex_counts['F']],
+                   marker=dict(colors=['#3498db', '#e91e63']))
+        ])
+        fig_sex.update_layout(title="Gender Distribution", height=400)
+        st.plotly_chart(fig_sex, use_container_width=True)
+
+    st.markdown("---")
+
+    # Clinical Measurements Distribution
+    st.markdown("### Clinical Measurements")
+
+    # Resting BP Distribution by Disease
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig_bp = go.Figure()
+        fig_bp.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==0]['RestingBP'],
+                                       name='No Disease', opacity=0.7, nbinsx=20, marker=dict(color='green')))
+        fig_bp.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==1]['RestingBP'],
+                                       name='Heart Failure', opacity=0.7, nbinsx=20, marker=dict(color='red')))
+        fig_bp.update_layout(title="Resting Blood Pressure by Disease Status", xaxis_title="Resting BP (mmHg)",
+                            yaxis_title="Count", barmode='overlay', height=400)
+        st.plotly_chart(fig_bp, use_container_width=True)
+
+    with col2:
+        fig_chol = go.Figure()
+        fig_chol.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==0]['Cholesterol'],
+                                        name='No Disease', opacity=0.7, nbinsx=20, marker=dict(color='green')))
+        fig_chol.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==1]['Cholesterol'],
+                                        name='Heart Failure', opacity=0.7, nbinsx=20, marker=dict(color='red')))
+        fig_chol.update_layout(title="Cholesterol Level by Disease Status", xaxis_title="Cholesterol (mg/dL)",
+                              yaxis_title="Count", barmode='overlay', height=400)
+        st.plotly_chart(fig_chol, use_container_width=True)
+
+    st.markdown("---")
+
+    # Max Heart Rate
+    col1, col2 = st.columns(2)
+
+    with col1:
+        fig_hr = go.Figure()
+        fig_hr.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==0]['MaxHR'],
+                                      name='No Disease', opacity=0.7, nbinsx=20, marker=dict(color='green')))
+        fig_hr.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==1]['MaxHR'],
+                                      name='Heart Failure', opacity=0.7, nbinsx=20, marker=dict(color='red')))
+        fig_hr.update_layout(title="Max Heart Rate by Disease Status", xaxis_title="Max HR (bpm)",
+                            yaxis_title="Count", barmode='overlay', height=400)
+        st.plotly_chart(fig_hr, use_container_width=True)
+
+    with col2:
+        fig_oldpeak = go.Figure()
+        fig_oldpeak.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==0]['Oldpeak'],
+                                          name='No Disease', opacity=0.7, nbinsx=20, marker=dict(color='green')))
+        fig_oldpeak.add_trace(go.Histogram(x=df_viz[df_viz['HeartDisease']==1]['Oldpeak'],
+                                          name='Heart Failure', opacity=0.7, nbinsx=20, marker=dict(color='red')))
+        fig_oldpeak.update_layout(title="ST Depression by Disease Status", xaxis_title="Oldpeak (ST depression)",
+                                 yaxis_title="Count", barmode='overlay', height=400)
+        st.plotly_chart(fig_oldpeak, use_container_width=True)
+
+    st.markdown("---")
+
+    # Categorical Features
+    st.markdown("### Categorical Features Analysis")
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        cp_counts = df_viz['ChestPainType'].value_counts()
+        fig_cp = go.Figure(data=[go.Bar(x=cp_counts.index, y=cp_counts.values, marker=dict(color='steelblue'))])
+        fig_cp.update_layout(title="Chest Pain Types", xaxis_title="Type", yaxis_title="Count", height=350)
+        st.plotly_chart(fig_cp, use_container_width=True)
+
+    with col2:
+        ecg_counts = df_viz['RestingECG'].value_counts()
+        fig_ecg = go.Figure(data=[go.Bar(x=ecg_counts.index, y=ecg_counts.values, marker=dict(color='orange'))])
+        fig_ecg.update_layout(title="Resting ECG Results", xaxis_title="Type", yaxis_title="Count", height=350)
+        st.plotly_chart(fig_ecg, use_container_width=True)
+
+    with col3:
+        slope_counts = df_viz['ST_Slope'].value_counts()
+        fig_slope = go.Figure(data=[go.Bar(x=slope_counts.index, y=slope_counts.values, marker=dict(color='green'))])
+        fig_slope.update_layout(title="ST Slope Distribution", xaxis_title="Slope", yaxis_title="Count", height=350)
+        st.plotly_chart(fig_slope, use_container_width=True)
+
+# ============================================================================
+# TAB 4: ABOUT PROJECT
+# ============================================================================
+
+with tab4:
     st.markdown("<h2 style='text-align: center; color: #065A82;'>📚 About This Project</h2>", unsafe_allow_html=True)
     st.markdown("---")
 
