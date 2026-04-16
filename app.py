@@ -550,23 +550,23 @@ with tab3:
 
     st.markdown("---")
 
-    # Features Information
+    # Features Information Table
     st.markdown("### Features Information")
-    with st.expander("📋 View All 11 Features and Descriptions", expanded=False):
-        features_text = """
-        1. **Age** - Patient age in years
-        2. **Sex** - Gender (M=Male, F=Female)
-        3. **ChestPainType** - Type of chest pain experienced
-        4. **RestingBP** - Resting blood pressure (mmHg)
-        5. **Cholesterol** - Serum cholesterol level (mg/dL)
-        6. **FastingBS** - Fasting blood sugar > 120 mg/dL (0=No, 1=Yes)
-        7. **RestingECG** - Resting electrocardiogram results
-        8. **MaxHR** - Maximum heart rate achieved (bpm)
-        9. **ExerciseAngina** - Exercise-induced angina (0=No, 1=Yes)
-        10. **Oldpeak** - ST depression induced by exercise relative to rest
-        11. **ST_Slope** - Slope of the ST segment (Up/Flat/Down)
-        """
-        st.markdown(features_text)
+    features_info = [
+        {"Feature": "Age", "Description": "Patient age in years"},
+        {"Feature": "Sex", "Description": "Gender (M=Male, F=Female)"},
+        {"Feature": "ChestPainType", "Description": "Type of chest pain experienced"},
+        {"Feature": "RestingBP", "Description": "Resting blood pressure (mmHg)"},
+        {"Feature": "Cholesterol", "Description": "Serum cholesterol level (mg/dL)"},
+        {"Feature": "FastingBS", "Description": "Fasting blood sugar > 120 mg/dL (0=No, 1=Yes)"},
+        {"Feature": "RestingECG", "Description": "Resting electrocardiogram results"},
+        {"Feature": "MaxHR", "Description": "Maximum heart rate achieved (bpm)"},
+        {"Feature": "ExerciseAngina", "Description": "Exercise-induced angina (0=No, 1=Yes)"},
+        {"Feature": "Oldpeak", "Description": "ST depression induced by exercise relative to rest"},
+        {"Feature": "ST_Slope", "Description": "Slope of the ST segment (Up/Flat/Down)"},
+    ]
+    features_df = pd.DataFrame(features_info)
+    st.table(features_df)
 
     st.markdown("---")
 
