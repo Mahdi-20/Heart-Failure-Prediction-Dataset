@@ -25,7 +25,7 @@ A **complete machine learning project** for predicting heart failure risk using 
 
 ## 🚀 Live Demo
 
-**[Open Interactive Web App →](https://heart-disease-predictor-7crsjwjiyk7su62cji42fz.streamlit.app/)**
+**[Open Interactive Web App →](https://heart-failure-prediction-mlcourse2025-2026.streamlit.app/)**
 
 The web application features:
 - 🔮 **Real-time Risk Prediction** - Input patient data and get instant heart failure risk assessment
@@ -257,7 +257,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**[🫀 Try the Live App →](https://heart-disease-predictor-7crsjwjiyk7su62cji42fz.streamlit.app/)**
+**[🫀 Try the Live App →](https://heart-failure-prediction-mlcourse2025-2026.streamlit.app/)**
 
 Built with ❤️ for machine learning education
 
