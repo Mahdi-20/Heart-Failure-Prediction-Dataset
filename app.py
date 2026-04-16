@@ -230,8 +230,12 @@ with tab1:
             'ST_Slope': [st_slope_encoded]
         })
 
-        # Scale input
-        input_scaled = scaler.transform(input_data)
+        # Define numeric columns (same as training)
+        numeric_cols = ['Age', 'RestingBP', 'Cholesterol', 'MaxHR', 'Oldpeak']
+
+        # Scale only numeric features
+        input_data[numeric_cols] = scaler.transform(input_data[numeric_cols])
+        input_scaled = input_data
 
         # Make prediction
         prediction = model.predict(input_scaled)[0]
