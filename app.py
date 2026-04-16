@@ -295,15 +295,19 @@ with tab1:
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(input_scaled)
 
+        # Handle SHAP values for binary classification
         if isinstance(shap_values, list):
-            shap_values_pred = shap_values[1]  # For disease class
+            shap_values_pred = np.abs(shap_values[1][0])  # For disease class, first sample
         else:
-            shap_values_pred = shap_values
+            shap_values_pred = np.abs(shap_values[0])  # Handle other cases
+
+        # Ensure 1D array
+        shap_values_pred = np.asarray(shap_values_pred).flatten()
 
         # Create simple feature importance visualization
         importance_df = pd.DataFrame({
             'Feature': feature_names,
-            'Impact': np.abs(shap_values_pred[0])
+            'Impact': shap_values_pred
         }).sort_values('Impact', ascending=False)
 
         fig_shap = go.Figure(go.Bar(
