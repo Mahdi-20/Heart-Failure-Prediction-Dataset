@@ -706,12 +706,16 @@ with tab4:
     - **SVM (Linear & RBF)** - Support Vector Machine classifiers
     - **Random Forest** - Ensemble decision tree method
     - **Logistic Regression** - Baseline statistical model
-    - **Linear Discriminant Analysis (LDA)** - Dimensionality reduction classifier
+    - **Decision Tree** - Tree-based classification model
 
-    **Model Evaluation & Selection:**
-    - **Methodology:** Stratified 5-fold Cross-Validation
+    **Model Evaluation & Hyperparameter Tuning:**
+    - **Methodology:** GridSearchCV with Stratified 5-fold Cross-Validation
+    - **CV Strategy:** StratifiedKFold (n_splits=5, shuffle=True) preserves class distribution (55% positive, 45% negative) in each fold
+    - **Hyperparameter Optimization:** Systematic grid search across 600+ parameter combinations for all 5 models
     - **Metrics:** Accuracy, ROC-AUC, Recall, Precision, F1-Score
-    - **Key Finding:** Random Forest achieved 92.39% ROC-AUC with 86.41% test accuracy
+    - **Best Model:** Tuned Random Forest with optimized hyperparameters
+    - **Key Finding:** Tuned Random Forest achieved 91.92% ROC-AUC with 86.96% test accuracy
+    - **Optimal Hyperparameters:** n_estimators=50, max_depth=15, min_samples_split=10, min_samples_leaf=4, max_features='sqrt'
     - **Data Quality:** 100% complete, no missing values, no duplicates, well-balanced classes
 
     **Model Deployment & Productionization:**
@@ -781,12 +785,13 @@ with tab4:
         - **Matplotlib/Seaborn** - Data visualization
         - **Plotly** - Interactive visualizations
 
-        ### ML Model Development
+        ### ML Model Development & Hyperparameter Tuning
+        - **GridSearchCV** - Systematic hyperparameter optimization
+        - **StratifiedKFold CV** - 5-fold cross-validation preserving class distribution
         - **SVM** - Support Vector Machine
-        - **Random Forest** - Ensemble classification (Selected)
+        - **Random Forest** - Ensemble classification (Selected & Tuned)
         - **Logistic Regression** - Baseline model
-        - **Model Training & Evaluation**
-        - **Cross-Validation** - 5-fold CV
+        - **Model Training & Evaluation** - Performance metrics across all models
         """)
 
     with col2:
@@ -825,16 +830,16 @@ with tab4:
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        st.metric("Algorithm", "Random Forest", "100 trees")
+        st.metric("Algorithm", "Random Forest (Tuned)", "50 trees")
 
     with col2:
-        st.metric("Test Accuracy", "86.41%", "✓ Excellent")
+        st.metric("Test Accuracy", "86.96%", "✓ Excellent")
 
     with col3:
-        st.metric("ROC-AUC", "0.9239", "✓ High")
+        st.metric("ROC-AUC", "0.9192", "✓ High")
 
     with col4:
-        st.metric("Recall", "87.25%", "Disease Detection")
+        st.metric("Recall", "91.18%", "Disease Detection")
 
     st.markdown("---")
 
