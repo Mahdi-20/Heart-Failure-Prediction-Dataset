@@ -714,7 +714,7 @@ with tab4:
     - **Hyperparameter Optimization:** Systematic grid search across 600+ parameter combinations for all 5 models
     - **Metrics:** Accuracy, ROC-AUC, Recall, Precision, F1-Score
     - **Best Model:** Tuned Random Forest with optimized hyperparameters
-    - **Key Finding:** Tuned Random Forest achieved 91.92% ROC-AUC with 86.96% test accuracy
+    - **Key Finding:** Tuned Random Forest achieved 92.50% ROC-AUC with 87.50% test accuracy
     - **Optimal Hyperparameters:** n_estimators=50, max_depth=15, min_samples_split=10, min_samples_leaf=4, max_features='sqrt'
     - **Data Quality:** 100% complete, no missing values, no duplicates, well-balanced classes
 
@@ -833,10 +833,10 @@ with tab4:
         st.metric("Algorithm", "Random Forest (Tuned)", "50 trees")
 
     with col2:
-        st.metric("Test Accuracy", "86.96%", "✓ Excellent")
+        st.metric("Test Accuracy", "87.50%", "✓ Excellent")
 
     with col3:
-        st.metric("ROC-AUC", "0.9192", "✓ High")
+        st.metric("ROC-AUC", "0.9250", "✓ High")
 
     with col4:
         st.metric("Recall", "91.18%", "Disease Detection")
