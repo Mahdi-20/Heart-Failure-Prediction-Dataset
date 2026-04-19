@@ -139,6 +139,24 @@ with open('feature_names.pkl', 'wb') as f:
     pickle.dump(X.columns.tolist(), f)
 print("  [OK] Saved: feature_names.pkl")
 
+# Save metrics to JSON for app.py to use
+metrics_data = {
+    'model_name': 'Random Forest (GridSearchCV Optimized)',
+    'test_accuracy': round(test_accuracy, 4),
+    'test_roc_auc': round(test_roc_auc, 4),
+    'test_recall': round(test_recall, 4),
+    'test_precision': round(test_precision, 4),
+    'test_f1': round(test_f1, 4),
+    'cv_roc_auc': round(rf_grid.best_score_, 4),
+    'hyperparameters': dict(rf_grid.best_params_),
+    'export_date': pd.Timestamp.now().isoformat()
+}
+
+import json
+with open('model_metrics.json', 'w') as f:
+    json.dump(metrics_data, f, indent=2)
+print("  [OK] Saved: model_metrics.json")
+
 print("\n" + "="*80)
 print("[OK] MODEL EXPORT COMPLETED SUCCESSFULLY")
 print("="*80)
@@ -147,5 +165,6 @@ print("  1. best_model.pkl       - Trained Random Forest classifier")
 print("  2. scaler.pkl           - StandardScaler for numeric features")
 print("  3. label_encoders.pkl   - LabelEncoders for categorical features")
 print("  4. feature_names.pkl    - List of feature names")
+print("  5. model_metrics.json   - Model performance metrics (read by app.py)")
 print("\nThese files are ready to be used with app.py")
 print("="*80 + "\n")

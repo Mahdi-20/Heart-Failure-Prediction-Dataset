@@ -1,0 +1,17 @@
+{
+  "model_name": "Random Forest (GridSearchCV Optimized)",
+  "test_accuracy": 0.875,
+  "test_roc_auc": 0.925,
+  "test_recall": 0.9118,
+  "test_precision": 0.8692,
+  "test_f1": 0.89,
+  "cv_roc_auc": 0.9321,
+  "hyperparameters": {
+    "max_depth": 10,
+    "max_features": "sqrt",
+    "min_samples_leaf": 2,
+    "min_samples_split": 10,
+    "n_estimators": 200
+  },
+  "export_date": "2026-04-19T14:13:22.734374"
+}

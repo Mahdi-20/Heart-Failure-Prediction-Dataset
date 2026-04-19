@@ -135,6 +135,28 @@ def save_patient_history(history):
 patient_history = load_patient_history()
 
 # ============================================================================
+# LOAD MODEL METRICS
+# ============================================================================
+
+def load_model_metrics():
+    """Load model performance metrics from JSON file (auto-updated by export_models.py)"""
+    if os.path.exists('model_metrics.json'):
+        with open('model_metrics.json', 'r') as f:
+            return json.load(f)
+    # Fallback defaults if file doesn't exist
+    return {
+        'model_name': 'Random Forest (GridSearchCV Optimized)',
+        'test_accuracy': 0.8750,
+        'test_roc_auc': 0.9250,
+        'test_recall': 0.9118,
+        'test_precision': 0.8692,
+        'test_f1': 0.8900,
+        'cv_roc_auc': 0.9321
+    }
+
+model_metrics = load_model_metrics()
+
+# ============================================================================
 # HEADER
 # ============================================================================
 
@@ -833,13 +855,16 @@ with tab4:
         st.metric("Algorithm", "Random Forest (Tuned)", "50 trees")
 
     with col2:
-        st.metric("Test Accuracy", "87.50%", "✓ Excellent")
+        accuracy_pct = f"{model_metrics['test_accuracy']*100:.2f}%"
+        st.metric("Test Accuracy", accuracy_pct, "✓ Excellent")
 
     with col3:
-        st.metric("ROC-AUC", "0.9250", "✓ High")
+        roc_auc_str = f"{model_metrics['test_roc_auc']:.4f}"
+        st.metric("ROC-AUC", roc_auc_str, "✓ High")
 
     with col4:
-        st.metric("Recall", "91.18%", "Disease Detection")
+        recall_pct = f"{model_metrics['test_recall']*100:.2f}%"
+        st.metric("Recall", recall_pct, "Disease Detection")
 
     st.markdown("---")
 
