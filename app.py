@@ -383,17 +383,24 @@ with tab2:
 
         history_df = pd.DataFrame(history)
         history_df['timestamp'] = pd.to_datetime(history_df['timestamp']).dt.strftime('%Y-%m-%d %H:%M')
-        history_df['risk_score'] = history_df['risk_score'].apply(lambda x: f"{x:.1%}")
+
+        # Format risk_score if column exists
+        if 'risk_score' in history_df.columns:
+            history_df['risk_score'] = history_df['risk_score'].apply(lambda x: f"{x:.1%}")
+
+        # Select columns that exist
+        cols_to_show = ['timestamp', 'patient_id', 'patient_name', 'age', 'risk_level', 'risk_score']
+        cols_available = [col for col in cols_to_show if col in history_df.columns]
 
         st.dataframe(
-            history_df[['timestamp', 'patient_id', 'patient_name', 'age', 'risk_level', 'risk_score']],
+            history_df[cols_available],
             use_container_width=True
         )
 
         # Risk trend chart
         st.markdown("### 📈 Risk Score Trends")
 
-        if len(history) > 1:
+        if len(history) > 1 and 'risk_score' in pd.DataFrame(history).columns:
             history_plot = pd.DataFrame(history)
             history_plot['timestamp'] = pd.to_datetime(history_plot['timestamp'])
 
@@ -415,7 +422,7 @@ with tab2:
 
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("Need at least 2 records to show trend chart.")
+            st.info("Need at least 2 records with risk scores to show trend chart.")
 
         # Clear history button
         if st.button("🗑️ Clear All History"):
