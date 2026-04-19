@@ -141,10 +141,10 @@ def prepare_features(age, sex, chest_pain, resting_bp, cholesterol, fasting_bs,
         'ChestPainType': chest_pain,
         'RestingBP': resting_bp,
         'Cholesterol': cholesterol,
-        'FastingBS': 1 if fasting_bs == 'Yes' else 0,
+        'FastingBS': fasting_bs,
         'RestingECG': resting_ecg,
         'MaxHR': max_hr,
-        'ExerciseAngina': 1 if exercise_angina == 'Yes' else 0,
+        'ExerciseAngina': exercise_angina,
         'Oldpeak': oldpeak,
         'ST_Slope': st_slope
     }
@@ -158,7 +158,13 @@ def prepare_features(age, sex, chest_pain, resting_bp, cholesterol, fasting_bs,
 
     for col in categorical_cols:
         if col in label_encoders:
-            df[col] = label_encoders[col].transform([df[col].values[0]])
+            try:
+                value = df[col].values[0]
+                encoded_value = label_encoders[col].transform([value])[0]
+                df[col] = encoded_value
+            except Exception as e:
+                st.error(f"Error encoding {col} with value '{value}': {e}")
+                st.stop()
 
     # Scale numeric features
     df[numeric_cols] = scaler.transform(df[numeric_cols])
@@ -213,21 +219,37 @@ with tab1:
 
     # Basic info
     age = st.sidebar.slider("Age (years)", min_value=25, max_value=85, value=50, step=1)
-    sex = st.sidebar.radio("Sex", options=["Male", "Female"], horizontal=True)
+    sex_display = st.sidebar.radio("Sex", options=["Male", "Female"], horizontal=True)
+    sex = "M" if sex_display == "Male" else "F"
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Chest & Heart**")
 
-    chest_pain_type = st.sidebar.selectbox(
+    chest_pain_map = {
+        "Typical Angina": "TA",
+        "Atypical Angina": "ATA",
+        "Non-anginal Pain": "NAP",
+        "Asymptomatic": "ASY"
+    }
+    chest_pain_display = st.sidebar.selectbox(
         "Chest Pain Type",
-        options=["Typical Angina", "Atypical Angina", "Non-anginal Pain", "Asymptomatic"]
+        options=list(chest_pain_map.keys())
     )
+    chest_pain_type = chest_pain_map[chest_pain_display]
 
-    exercise_angina = st.sidebar.radio("Exercise Induced Angina", options=["No", "Yes"], horizontal=True)
-    st_slope = st.sidebar.selectbox(
+    exercise_angina_display = st.sidebar.radio("Exercise Induced Angina", options=["No", "Yes"], horizontal=True)
+    exercise_angina = "N" if exercise_angina_display == "No" else "Y"
+
+    st_slope_map = {
+        "Upsloping": "Up",
+        "Flat": "Flat",
+        "Downsloping": "Down"
+    }
+    st_slope_display = st.sidebar.selectbox(
         "ST Slope (Exercise)",
-        options=["Upsloping", "Flat", "Downsloping"]
+        options=list(st_slope_map.keys())
     )
+    st_slope = st_slope_map[st_slope_display]
 
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Blood Pressure & Cholesterol**")
@@ -244,11 +266,19 @@ with tab1:
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Lab Results**")
 
-    fasting_bs = st.sidebar.radio("Fasting Blood Sugar > 120 mg/dL", options=["No", "Yes"], horizontal=True)
-    resting_ecg = st.sidebar.selectbox(
+    fasting_bs_display = st.sidebar.radio("Fasting Blood Sugar > 120 mg/dL", options=["No", "Yes"], horizontal=True)
+    fasting_bs = 1 if fasting_bs_display == "Yes" else 0
+
+    resting_ecg_map = {
+        "Normal": "Normal",
+        "ST-T Abnormality": "ST",
+        "LV Hypertrophy": "LVH"
+    }
+    resting_ecg_display = st.sidebar.selectbox(
         "Resting ECG",
-        options=["Normal", "ST-T Abnormality", "LV Hypertrophy"]
+        options=list(resting_ecg_map.keys())
     )
+    resting_ecg = resting_ecg_map[resting_ecg_display]
 
     # Make prediction
     input_features = prepare_features(
