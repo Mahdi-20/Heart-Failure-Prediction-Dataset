@@ -2,6 +2,16 @@
 
 A comprehensive machine learning project for heart failure prediction with interactive web application deployment using Streamlit.
 
+## 🌐 Live Web Application
+
+**[Access the Interactive App Here](https://heart-failure-prediction-mlcourse2025-2026.streamlit.app/)**
+
+➡️ Click the link above to use the app directly in your browser!
+- No installation required
+- Real-time predictions
+- Patient history tracking
+- Interactive visualizations
+
 ## 🎯 Project Overview
 
 **Objective:** Predict heart failure risk using supervised machine learning classification with clinical features.
@@ -21,12 +31,14 @@ A comprehensive machine learning project for heart failure prediction with inter
 ### Best Model Performance
 | Metric | Value |
 |--------|-------|
-| Algorithm | Random Forest (100 trees) |
-| Test Accuracy | **86.41%** |
-| ROC-AUC | **0.9239** |
-| Test Recall | **87.25%** |
-| Test Precision | **88.12%** |
-| Cross-Validation (5-fold) | 92.75% ROC-AUC |
+| Algorithm | Random Forest (GridSearchCV Optimized) |
+| Trees (n_estimators) | **200** |
+| Test Accuracy | **87.50%** |
+| ROC-AUC | **0.9250** |
+| Test Recall | **91.18%** |
+| Test Precision | **86.92%** |
+| F1-Score | **0.8900** |
+| Cross-Validation (5-fold) | 93.21% ROC-AUC |
 
 ## 📊 Dataset
 
@@ -200,12 +212,17 @@ heart-failure-predictor/
 
 ## 🌐 Deployment Options
 
-### Streamlit Cloud (Recommended)
-1. Push to GitHub repository
+### Live Deployment (Current)
+**[🎯 Access the Live App Here](https://heart-failure-prediction-mlcourse2025-2026.streamlit.app/)**
+
+The application is currently deployed on **Streamlit Cloud** and is ready for use!
+
+### Deploy Your Own Version (Streamlit Cloud)
+1. Fork this repository on GitHub
 2. Go to [streamlit.io/cloud](https://streamlit.io/cloud)
-3. Connect GitHub account
-4. Deploy new app from repository
-5. Share app URL
+3. Connect your GitHub account
+4. Deploy new app from your repository
+5. Share your app URL
 
 ### Docker Deployment
 ```dockerfile
@@ -242,10 +259,11 @@ Always consult with qualified healthcare professionals for medical advice and di
 - Class Balance: 0.81 ratio (excellent) ✓
 
 ### Model Selection
-- **5 Models Tested**: SVM, Random Forest, Logistic Regression, LDA, SVM RBF
-- **Best Model**: Random Forest
-  - **Why RF?** Best ROC-AUC (0.9275), excellent generalization
-  - **Metrics**: 86.41% accuracy, 92.39% test AUC, 87.25% recall
+- **5 Models Tested**: SVM (Linear & RBF), Random Forest, Logistic Regression, LDA
+- **Best Model**: Random Forest (GridSearchCV Optimized)
+  - **Why RF?** Best ROC-AUC (0.9250), excellent disease detection (91.18% recall)
+  - **Training Method**: GridSearchCV with StratifiedKFold (5-fold CV)
+  - **Metrics**: 87.50% accuracy, 92.50% test AUC, 91.18% recall, 86.92% precision
 
 ### Preprocessing Applied
 - Categorical encoding: 5 features (Sex, ChestPainType, RestingECG, ExerciseAngina, ST_Slope)
@@ -263,6 +281,8 @@ Always consult with qualified healthcare professionals for medical advice and di
 
 ## 🔗 Links
 
+- **[🌐 Live Application](https://heart-failure-prediction-mlcourse2025-2026.streamlit.app/)** - Access the interactive app now!
+- **[📊 GitHub Repository](https://github.com/Mahdi-20/Heart-Failure-Prediction-Dataset)** - Source code and documentation
 - **Dataset:** https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction
 - **Professor:** https://foster.uw.edu/faculty-research/directory/hamed-mamani/
 - **Streamlit Docs:** https://docs.streamlit.io/
