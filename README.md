@@ -66,6 +66,8 @@ Advanced ML Model for Heart Disease Risk Assessment using supervised machine lea
 
 ## 📊 Model Performance
 
+**🏆 Best Model: Random Forest (Tuned with GridSearchCV)**
+
 | Metric | Score | Interpretation |
 |--------|-------|-----------------|
 | Test Accuracy | 87.5% | Excellent overall performance |
@@ -73,6 +75,12 @@ Advanced ML Model for Heart Disease Risk Assessment using supervised machine lea
 | Recall | 91.18% | High disease detection rate |
 | Precision | 86.92% | Low false positive rate |
 | F1-Score | 89.0% | Balanced precision-recall |
+
+**Models Evaluated:**
+- ✅ **Random Forest** (Best) - 92.5% ROC-AUC
+- Support Vector Machine (SVM) - Linear & RBF kernels
+- Logistic Regression - Baseline model
+- Decision Tree - Tree-based classifier
 
 ## 🎯 Key Features
 
