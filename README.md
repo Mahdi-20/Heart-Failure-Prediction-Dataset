@@ -79,8 +79,9 @@ Advanced ML Model for Heart Disease Risk Assessment using supervised machine lea
 **Models Evaluated:**
 - ✅ **Random Forest** (Best) - 92.5% ROC-AUC
 - Support Vector Machine (SVM) - Linear & RBF kernels
-- Logistic Regression - Baseline model
+- Logistic Regression - Baseline statistical model
 - Decision Tree - Tree-based classifier
+- Deep Learning - Neural network experimentation (foundation laid)
 
 ## 🎯 Key Features
 
