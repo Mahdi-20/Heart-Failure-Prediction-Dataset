@@ -16,62 +16,43 @@ Advanced ML Model for Heart Disease Risk Assessment using supervised machine lea
 
 **Try it now:** [Heart Failure Prediction System](https://heart-failure-prediction-mlcourse2025-2026.streamlit.app/)
 
-## 📁 Project Structure
+## 📁 Repository Contents
 
-```
-Heart-Failure-Prediction-Dataset/
-│
-├── 📁 Final/                                (DELIVERABLES - Ready to Share)
-│   ├── heart.csv                          (Dataset)
-│   ├── ML_Analysis_Final_ver_2_0.ipynb    (Complete analysis notebook)
-│   ├── ML_Analysis_Final_ver_2_0.pdf      (Detailed report)
-│   ├── ML_Analysis_Final_ver_2_0.tex      (LaTeX source)
-│   ├── app.py                             (Streamlit webapp)
-│   ├── best_model.pkl                     (Trained Random Forest model)
-│   ├── scaler.pkl                         (StandardScaler)
-│   ├── label_encoders.pkl                 (Categorical encoders)
-│   ├── feature_names.pkl                  (Feature reference)
-│   ├── model_metrics.json                 (Performance metrics)
-│   ├── patient_history.json               (Sample patient data)
-│   ├── ML_Course_Project_Presentatoin_Group5_ver1(20260419).pptx  (Group presentation)
-│   ├── RF_Deployment_Pipeline.png         (Deployment diagram)
-│   ├── Data_Preprocessing_Flowchart.png   (Data pipeline diagram)
-│   ├── requirements.txt                   (Python dependencies)
-│   └── README.md                          (Project documentation)
-│
-├── 📁 Scripts/                            (Utility & Visualization Scripts)
-│   ├── create_deployment_flowchart.py
-│   ├── create_preprocessing_image.py
-│   ├── create_feature_table_ppt.py
-│   ├── create_flowchart_image.py
-│   ├── ml_pipeline.py
-│   ├── train_model.py
-│   ├── export_models.py
-│   └── ... (15+ utility scripts)
-│
-├── 📁 BuildArtifacts/                     (LaTeX/PDF Build Temporary Files)
-│   ├── *.log, *.aux, *.out, *.toc
-│   └── *_files/ (HTML build artifacts)
-│
-├── 📁 Images/                             (Generated Visualizations)
-│   ├── ML_Pipeline_Flowchart.png
-│   ├── folowchart.png
-│   ├── EKG*.png
-│   └── preprocessing_pipline.png
-│
-├── 📁 Development/                        (Experimental/Demo Files)
-│   └── webapp_demo_60sec.gif
-│
-├── 📁 Archive/                            (Old Versions & Backups)
-│   ├── ML_Analysis.ipynb (old)
-│   ├── ML_Pipeline.ipynb (old)
-│   ├── LLM_presentation.* (old)
-│   └── ML_Project_Summary.* (old)
-│
-├── .git/                                  (Version control)
-├── .gitignore                             (Git ignore rules)
-└── README.md                              (This file)
-```
+**Core Project Files:**
+- `ML_Analysis_Final_ver_2_0.ipynb` - Complete ML analysis & documentation
+- `ML_Analysis_Final_ver_2_0.pdf` - Detailed project report
+- `ML_Analysis_Final_ver_2_0.tex` - LaTeX source for PDF
+- `app.py` - Streamlit web application for predictions
+- `heart.csv` - Heart disease dataset (918 samples, 11 features)
+- `requirements.txt` - Python dependencies
+
+**Trained Models & Preprocessing:**
+- `best_model.pkl` - Trained Random Forest model (1.7 MB)
+- `scaler.pkl` - StandardScaler for feature normalization
+- `label_encoders.pkl` - Categorical feature encoders
+- `feature_names.pkl` - Feature names reference
+
+**Data & Metrics:**
+- `model_metrics.json` - Model performance metrics
+- `patient_history.json` - Sample patient data
+- `DATASET_ANALYSIS.md` - Dataset documentation
+
+**Presentations & Visualizations:**
+- `ML_Course_Project_Presentatoin_Group5_ver1(20260419).pptx` - Group project presentation
+- `RF_Deployment_Pipeline.png` - Deployment architecture diagram
+- `Data_Preprocessing_Flowchart.png` - Data preprocessing pipeline diagram
+
+**Utility Scripts:**
+- `ml_pipeline.py` - ML pipeline utilities
+- `train_model.py` - Model training script
+- `export_models.py` - Model export utilities
+- `add_deep_learning.py` - Deep learning experimentation
+- Additional utility scripts for data visualization and processing
+
+**Configuration Files:**
+- `.gitignore` - Git ignore rules
+- `.devcontainer/devcontainer.json` - Development container setup
+- `README.md` - This file
 
 ## 🔧 Technologies Used
 
