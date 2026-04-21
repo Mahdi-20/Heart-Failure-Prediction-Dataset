@@ -37,22 +37,11 @@ Advanced ML Model for Heart Disease Risk Assessment using supervised machine lea
 - `patient_history.json` - Sample patient data
 - `DATASET_ANALYSIS.md` - Dataset documentation
 
-**Presentations & Visualizations:**
-- `ML_Course_Project_Presentatoin_Group5_ver1(20260419).pptx` - Group project presentation
-- `RF_Deployment_Pipeline.png` - Deployment architecture diagram
-- `Data_Preprocessing_Flowchart.png` - Data preprocessing pipeline diagram
-
 **Utility Scripts:**
 - `ml_pipeline.py` - ML pipeline utilities
 - `train_model.py` - Model training script
 - `export_models.py` - Model export utilities
 - `add_deep_learning.py` - Deep learning experimentation
-- Additional utility scripts for data visualization and processing
-
-**Configuration Files:**
-- `.gitignore` - Git ignore rules
-- `.devcontainer/devcontainer.json` - Development container setup
-- `README.md` - This file
 
 ## 🔧 Technologies Used
 
