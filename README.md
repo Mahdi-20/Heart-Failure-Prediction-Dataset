@@ -83,6 +83,8 @@ Advanced ML Model for Heart Disease Risk Assessment using supervised machine lea
 - Decision Tree - Tree-based classifier
 - Deep Learning - Neural network experimentation (foundation laid)
 
+<img src="Final_Presented/figures/DL_arc.png" alt="Neural Network Architecture" width="600">
+
 ## 🎯 Key Features
 
 ✅ **Real-time Predictions** - Instant risk assessment with clinical inputs
