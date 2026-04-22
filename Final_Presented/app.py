@@ -737,7 +737,7 @@ with tab4:
     - **Metrics:** Accuracy, ROC-AUC, Recall, Precision, F1-Score
     - **Best Model:** Tuned Random Forest with optimized hyperparameters
     - **Key Finding:** Tuned Random Forest achieved 92.50% ROC-AUC with 87.50% test accuracy
-    - **Optimal Hyperparameters:** n_estimators=50, max_depth=15, min_samples_split=10, min_samples_leaf=4, max_features='sqrt'
+    - **Optimal Hyperparameters:** n_estimators=100, max_depth=10, min_samples_split=10, min_samples_leaf=2, max_features='sqrt'
     - **Data Quality:** 100% complete, no missing values, no duplicates, well-balanced classes
 
     **Model Deployment & Productionization:**
