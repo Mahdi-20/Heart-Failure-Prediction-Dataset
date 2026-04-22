@@ -163,4 +163,4 @@ This project is part of an educational course. Use for learning purposes only.
 
 **Last Updated:** April 21, 2026
 
-Built with ❤️ using Python, Machine Learning, and Streamlit
+Built with Python, Machine Learning, and Streamlit
