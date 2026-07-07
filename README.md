@@ -148,6 +148,7 @@ Open `Final/ML_Analysis_Final_ver_2_0.ipynb` in Jupyter Notebook
 **Mahdi Bakhtiari** (@mahdi-20)
 
 - GitHub: [github.com/mahdi-20](https://github.com/mahdi-20)
+- Collaborator: Behnaz Korzebor (https://github.com/Behnaz-shayan)
 
 ## ⚠️ Important Disclaimer
 
